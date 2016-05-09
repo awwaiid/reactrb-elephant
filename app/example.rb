@@ -50,11 +50,11 @@ class App < React::Component::Base
         IntroPage goto_page: method(:goto_page) # to_proc stops warning
       when "Triage"
         Triage(
-          current_product: state.app_state[:product],
+          current_product:   state.app_state[:product],
           possible_products: state.app_state[:possible_products],
-          keep_product: method(:keep_product),
-          remove_product: method(:remove_product),
-          next_product: method(:next_product))
+          keep_product:      method(:keep_product),
+          remove_product:    method(:remove_product),
+          next_product:      method(:next_product))
       when "Feedback"
         CommentBox app_state: state.app_state
       when "About"
@@ -90,12 +90,15 @@ end
 class AboutPage < React::Component::Base
   def render
     div {
-      h2 { "About: What is this thing?!" }
-      p { "I (Brock - awwaiid@thelackthereof.org) work for blinq.com, and
-           thought it would be cool to make a gift picker in my free time." }
-      a(href: "https://github.com/awwaiid/reactrb-elephant") { "Github" }
-      span { " - " }
-      a(href: "https://twitter.com/awwaiid") { "@awwaiid" }
+      Showdown markup: <<-END.gsub(/^\ {8}/, "")
+        ## About: What is this thing?!
+
+        I previously built this in ClojureScript/React. This is a re-write
+        using Opal/ReactRB!
+
+        [Github](https://github.com/awwaiid/reactrb-elephant) -
+        [@awwaiid](https://twitter.com/awwaiid)
+      END
     }
   end
 end
@@ -104,20 +107,20 @@ class IntroPage < React::Component::Base
   param :goto_page, type: Proc
   def render
     div {
-      p { "You're going to a White Elephant Gift Exchange Party!  It is
-           VITAL that you show up with a great gift. But there are so many choices!
-           What to do?" }
-      p {
-        strong { "Triage Phase: " }
-        span { "We'll look through a bunch of random products, keeping the potential
-                gifts. Pick out at least 16. You decide what is worthy for consideration...
-                Funny? Work-appropriate? Kinda Awesome?" }
-      }
-      p {
-        strong { "Tournament Phase: " }
-        span { "Now that you have some potentials, it's time to pick THE BEST! Two enter
-                the ring, one leaves... in the end there can be only one!" }
-      }
+      Showdown markup: <<-END.gsub(/^\ {8}/, "")
+        You're going to a **White Elephant Gift Exchange Party!** It is VITAL
+        that you show up with a great gift. But there are so many choices!
+        What to do?
+
+        **Triage Phase:** We'll look through a bunch of random products,
+        keeping the potential gifts. Pick out at least 16. You decide what is
+        worthy for consideration...  Funny? Work-appropriate? Kinda Awesome?
+
+        **Tournament Phase:** Now that you have some potentials, it's time to
+        pick THE BEST! Two enter the ring, one leaves... in the end there can
+        be only one!
+      END
+
       a(href:'#') { "Begin the triage!" }.on(:click) { params.goto_page('Triage') }
     }
   end
@@ -134,7 +137,6 @@ class Triage < React::Component::Base
 
   def render
     div {
-      h2 { 'Triage' }
 #   ; (if (< (count (@app-state :possible-products)) 1)
 #   ;   (secretary/dispatch! "/"))
 #   [:div
@@ -154,7 +156,7 @@ class Triage < React::Component::Base
 #    [:br]])
 
       div.current {
-        h3 { "Worth Adding To Your List?" }
+        h3 { "Is this a white-elephant-gift worth considering?" }
         Product(product: params.current_product)
         a.another(href:'#') { "Not For Me" }.on(:click) { next_product }
         br
@@ -177,20 +179,12 @@ class Triage < React::Component::Base
   def next_product
     params.next_product
   end
-
-# (defn save-product []
-#   (if (@app-state :product)
-#     (if (not (seq-contains? (map :title (@app-state :possible-products)) (get-in @app-state [:product :title])))
-#       (do (
-#         (swap! app-state update-in [:possible-products] conj (@app-state :product))
-#         (swap! app-state assoc :product {})
-#         ; (swap! app-state update-in [:possible-products] shuffle))
-#           ))))
-#     (next-product))
 end
 
 class Product < React::Component::Base
+
   param :product
+
   def render
     puts "Product: render [#{params.product}]"
     div.product {
@@ -232,14 +226,9 @@ class CommentBox < React::Component::Base
     @fetcher.start
   end
 
-  # finally our component should be a good citizen and stop the polling when its unmounted
-
   before_unmount do
     @fetcher.stop
   end
-
-  # components can have their own methods like any other class
-  # in this case we receive a new comment and send it the server
 
   def send_comment_to_server(comment)
     HTTP.post(@url, payload: comment) do |response|
@@ -248,30 +237,16 @@ class CommentBox < React::Component::Base
     comment
   end
 
-  # every component must implement a render method.  The method must generate a single
-  # react virtual DOM element.  React compares the output of each render and determines
-  # the minimum actual DOM update needed.
-
-  # A very common mistake is to try generate two or more elements (or none at all.) Either case will
-  # throw an error.  Just remember that there is already a DOM node waiting for the output of the render
-  # hence the need for exactly one element per render.
-
   def render
-    puts "Rendering CommentBox"
-
     div class: "commentBox" do          # just like <div class="commentBox">
-
       h2 { "Feedback is really awesome!" }
 
-      puts "Re-rendering CommentBox"
       CommentForm submit_comment: lambda { |comment|
         state.comments!.unshift(send_comment_to_server(comment))
       }
       CommentList comments: [*state.comments]
-
     end
   end
-
 end
 
 # Our second component!
@@ -281,8 +256,6 @@ class CommentList < React::Component::Base
   param :comments, type: Array
 
   def render
-    puts "Rendering #{params.comments.count} comments"
-
     div.commentList.and_another_class.and_another do
       params.comments.each do |comment|
         Comment author: comment[:author], text: comment[:text] # , hash: comment
@@ -300,93 +273,52 @@ class CommentForm < React::Component::Base
   def render
     div do
       div do
-
-        "Author: ".span # Note the shorthand for span { "Author" }
-        # You can do this with br, span, th, td, and para (for p) tags
-
-
-        input.author_name(type: :text, value: state.author, placeholder: "Your name", style: {width: "30%"})
+        input.author_name(type: :text, value: state.author, placeholder: "Your name")
           .on(:change) { |e| state.author! e.target.value }
-
       end
 
       div do
-        # lets have some fun with the text.  Same deal as the author except we will use a text area...
-        div(style: {float: :left, width: "50%"}) do
-          textarea(value: state.text, placeholder: "Say something...", style: {width: "90%"}, rows: 30).
-            on(:change) { |e| state.text! e.target.value }
+        div do
+          textarea(value: state.text, placeholder: "Say something...", rows: 6, cols: 60)
+            .on(:change) { |e| state.text! e.target.value }
         end
-        # and lets use Showdown to allow for markdown, and display the mark down to the left of input
-        # we will define Showdown later, and it will be our first reusable component, as we will use it twice.
-        div(style: {float: :left, width: "50%"}) do
-          Showdown markup: state.text
+        div.preview do
+          "PREVIEW".span
+          Comment author: state.author, text: state.text
         end
       end
 
-      # Finally lets give the use a button to submit changes.  Why not? We have come this far!
-      # Notice how the submit_comment proc param allows us to be ignorant of how the update is made.
-
-      # Notice that (author! "") updates author, but returns the current value.
-      # This is usually the desired behavior in React as we are typically interested in state changes,
-      # and before/after values, not simply doing a chained update of multiple variables.
-
-      button { "Post" }.on(:click) { params.submit_comment author: (state.author! ""), text: (state.text! "") }
-
+      button { "Post" }
+        .on(:click) {
+          params.submit_comment author: (state.author! ""), text: (state.text! "")
+        }
     end
   end
 end
 
-# Wow only two more components left!  This one is a breeze.  We just take the author, and text and display
-# them.  We already know how to use our Showdown component to display the markdown so we can just reuse that.
-
-class Comment
-
-  include React::Component
+class Comment < React::Component::Base
 
   param :author
   param :text
-  # param :hash, type: Hash
 
   def render
     div.comment do
-      h2.comment_author { params.author } # NOTE: single underscores in haml style class names are converted to dashes
-                                   # so comment_author becomes comment-author, but comment__author would be comment_author
-                                   # this is handy for boot strap names like col-md-push-9 which can be written as col_md_push_9
+      h2.comment_author { params.author }
       Showdown markup: params.text
     end
   end
 
 end
 
-# Last but not least here is our ShowDown Component
-
-class Showdown
-
-  include React::Component
+class Showdown < React::Component::Base
 
   param :markup
 
   def render
-
-    # we will use some Opal lowlevel stuff to interface to the javascript Showdown class
-    # we only need to build the converter once, and then reuse it so we will use a plain old
-    # instance variable to keep track of it.
-
     @converter ||= Native(`new Showdown.converter()`)
-
-    # then we will take our markup param, and convert it to html
-
     raw_markup = @converter.makeHtml(params.markup) if params.markup
 
-    # React.js takes a very dim view of passing raw html so its purposefully made
-    # difficult so you won't do it by accident.  After all think of how dangerous what we
-    # are doing right here is!
-
-    # The span tag can be replaced by any tag that could sensibly take a child html element.
-    # You could also use div, td, etc.
-
     span(dangerously_set_inner_HTML: {__html: raw_markup})
-
   end
 
 end
