@@ -31,7 +31,7 @@ end
 
 post "/comments.json" do
   comments = JSON.parse(open("./_comments.json").read)
-  comments << JSON.parse(request.body.read)
+  comments.unshift(JSON.parse(request.body.read))
   File.write('./_comments.json', JSON.pretty_generate(comments, :indent => '    '))
   JSON.generate(comments)
 end

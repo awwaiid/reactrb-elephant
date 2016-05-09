@@ -17,20 +17,19 @@ if ! $loaded # Only set this up once
 end
 
 class App < React::Component::Base
-  export_state(:app_state) { App.respond_to?(:app_state) ? App.app_state : Hash.new }
+  define_state :app_state
   before_mount do
-    puts "Getting ready to mount App"
-    App.app_state[:page] = 'Intro'
-    App.app_state[:product] = {
+    state.app_state! Hash.new
+    state.app_state[:page] = 'Intro'
+    state.app_state[:product] = {
       title: "hmm",
       img: '',
       url: '',
       price: "12.23" }
-    App.app_state[:possible_products] = []
+    state.app_state[:possible_products] = []
   end
 
   def render
-    puts "Rendering App"
     div do
       span { "White Elephant Gift Selector" }
       pages = ['Intro', 'Triage', 'Feedback', 'About']
@@ -38,50 +37,61 @@ class App < React::Component::Base
         pages.each do |pagename|
           li {
             a(href: "#") { pagename }.on(:click) {
-              App.app_state![:page] = pagename
+              state.app_state![:page] = pagename
             }
           }
         end
       }
-      current_page = App.app_state[:page]
+      current_page = state.app_state[:page]
       case current_page
       when "Intro"
-        IntroPage {}
+        IntroPage goto_page: method(:goto_page) # to_proc stops warning
       when "Triage"
-        puts "Sending product #{App.app_state[:product]} to Product"
         Triage(
-          current_product: App.app_state[:product],
-          possible_products: App.app_state[:possible_products],
-          keep_product: lambda { |product|
-            App.app_state![:possible_products] << product
-          })
+          current_product: state.app_state[:product],
+          possible_products: state.app_state[:possible_products],
+          keep_product: method(:keep_product),
+          remove_product: method(:remove_product),
+          next_product: method(:next_product))
       when "Feedback"
-        puts "Returning CommentBox"
-        CommentBox app_state: App.app_state
+        CommentBox app_state: state.app_state
       when "About"
-        puts "Returning AboutPage"
         AboutPage {}
       else
         h2 { "ERROR" }
       end
     end
   end
+
+  def goto_page(pagename)
+    state.app_state![:page] = pagename
+  end
+
+  def keep_product(product)
+    state.app_state![:possible_products] << product
+    next_product
+  end
+
+  def remove_product(product)
+    state.app_state![:possible_products].delete(product)
+  end
+
+  def next_product
+    state.app_state![:product] = {
+      title: "Other thing",
+      img: '',
+      url: '',
+      price: rand(20).to_s }
+  end
 end
 
 class AboutPage < React::Component::Base
-  before_mount do
-    puts "AboutPage: before_mount"
-  end
-  before_unmount do
-    puts "AboutPage: before_unmount"
-  end
-
   def render
     div {
       h2 { "About: What is this thing?!" }
       p { "I (Brock - awwaiid@thelackthereof.org) work for blinq.com, and
            thought it would be cool to make a gift picker in my free time." }
-      a(href: "https://github.com/awwaiid/white-elephant") { "Github" }
+      a(href: "https://github.com/awwaiid/reactrb-elephant") { "Github" }
       span { " - " }
       a(href: "https://twitter.com/awwaiid") { "@awwaiid" }
     }
@@ -89,6 +99,7 @@ class AboutPage < React::Component::Base
 end
 
 class IntroPage < React::Component::Base
+  param :goto_page, type: Proc
   def render
     div {
       p { "You're going to a White Elephant Gift Exchange Party!  It is
@@ -105,7 +116,7 @@ class IntroPage < React::Component::Base
         span { "Now that you have some potentials, it's time to pick THE BEST! Two enter
                 the ring, one leaves... in the end there can be only one!" }
       }
-      a(href:'#') { "Begin the triage!" }.on(:click) { App.app_state![:page] = 'Triage' }
+      a(href:'#') { "Begin the triage!" }.on(:click) { params.goto_page('Triage') }
     }
   end
 end
@@ -116,9 +127,10 @@ class Triage < React::Component::Base
   param :possible_products
 
   param :keep_product, type: Proc
+  param :next_product, type: Proc
+  param :remove_product, type: Proc
 
   def render
-    puts "Triage: render"
     div {
       h2 { 'Triage' }
 #   ; (if (< (count (@app-state :possible-products)) 1)
@@ -142,23 +154,28 @@ class Triage < React::Component::Base
       div.current {
         h3 { "Worth Adding To Your List?" }
         Product(product: params.current_product)
-        a.another { "Not For Me" }.on(:click) { next_product }
+        a.another(href:'#') { "Not For Me" }.on(:click) { next_product }
         br
-        a.thisone { "Keep it!" }.on(:click) { keep_product }
+        a.thisone(href:'#') { "Keep it!" }.on(:click) { keep_product }
       }
 
       div.contenders {
         params.possible_products.each do |product|
-          puts "Rendering contender"
           Product(product: product)
-          puts "Done Rendering contender"
+          a(href:'#') { "remove" }.on(:click) { remove_product(product) }
         end
       }
     }
   end
+
   def keep_product
     params.keep_product(params.current_product)
   end
+
+  def next_product
+    params.next_product
+  end
+
 # (defn save-product []
 #   (if (@app-state :product)
 #     (if (not (seq-contains? (map :title (@app-state :possible-products)) (get-in @app-state [:product :title])))
@@ -193,7 +210,6 @@ class CommentBox < React::Component::Base
   define_state(:comments) { JSON.from_object(`window.initial_comments`) }
 
   before_mount do
-    puts "CommentBox: before_mount"
     state.comments! JSON.from_object(`window.initial_comments`)
     @url = 'comments.json'
     @poll_interval = 2
@@ -211,15 +227,12 @@ class CommentBox < React::Component::Base
   end
 
   after_mount do
-    puts "CommentBox: after_mount"
-    puts "start me up!"
     @fetcher.start
   end
 
   # finally our component should be a good citizen and stop the polling when its unmounted
 
   before_unmount do
-    puts "CommentBox: before_unmount"
     @fetcher.stop
   end
 
@@ -250,7 +263,7 @@ class CommentBox < React::Component::Base
 
       puts "Re-rendering CommentBox"
       CommentForm submit_comment: lambda { |comment|
-        state.comments! << send_comment_to_server(comment)
+        state.comments!.unshift(send_comment_to_server(comment))
       }
       CommentList comments: [*state.comments]
 
@@ -289,13 +302,9 @@ class CommentForm < React::Component::Base
         "Author: ".span # Note the shorthand for span { "Author" }
         # You can do this with br, span, th, td, and para (for p) tags
 
-        # Now we are going to generate an input tag.  Notice how the author state variable is provided. Referencing
-        # author is what will cause us to re-render and update the input as the value of author changes.
-        # React will optimize the updates so parts that are not changing will not be effected.
 
-        input.author_name(type: :text, value: state.author, placeholder: "Your name", style: {width: "30%"}).
-          # and we attach an on_change handler to the input.  As the input changes we simply update author.
-          on(:change) { |e| state.author! e.target.value }
+        input.author_name(type: :text, value: state.author, placeholder: "Your name", style: {width: "30%"})
+          .on(:change) { |e| state.author! e.target.value }
 
       end
 
