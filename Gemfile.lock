@@ -2,7 +2,12 @@ GEM
   remote: https://rubygems.org/
   specs:
     concurrent-ruby (1.0.1)
+    ffi (1.9.10)
     hike (1.2.3)
+    listen (3.1.3)
+      rb-fsevent (~> 0.9, >= 0.9.7)
+      rb-inotify (~> 0.9, >= 0.9.7)
+      ruby_dep (~> 1.2)
     opal (0.8.0)
       hike (~> 1.2)
       sourcemap (~> 0.1.0)
@@ -19,10 +24,16 @@ GEM
     rack (1.6.4)
     rack-protection (1.5.3)
       rack
+    rb-fsevent (0.9.7)
+    rb-inotify (0.9.7)
+      ffi (>= 0.5.0)
     reactive-ruby (0.7.40)
       opal (= 0.8.0)
       opal-activesupport (>= 0.2.0)
       opal-browser (= 0.2.0)
+    rerun (0.11.0)
+      listen (~> 3.0)
+    ruby_dep (1.3.1)
     sinatra (1.4.7)
       rack (~> 1.5)
       rack-protection (~> 1.4)
@@ -39,4 +50,8 @@ PLATFORMS
 DEPENDENCIES
   opal-jquery
   reactive-ruby (= 0.7.40)
+  rerun
   sinatra
+
+BUNDLED WITH
+   1.12.3
