@@ -4,8 +4,7 @@ require 'jquery'
 require 'opal-jquery'
 require "json"
 require 'reactive-ruby'
-
-require 'opal-parser' # gives me 'eval', for hot-loading code
+require 'liveloader'
 
 Document.ready? do
   if ! $loaded
@@ -16,21 +15,6 @@ Document.ready? do
     )
   end
 end
-
-module React
-  module Component
-    class Base
-      def force_update_all!
-        force_update!
-        children.each do |child|
-          puts "Child: #{child}"
-        #   child.force_update_all!
-        end
-      end
-    end
-  end
-end
-
 
 class App < React::Component::Base
   export_state(:app_state) { App.respond_to?(:app_state) ? App.app_state : Hash.new }
@@ -43,25 +27,6 @@ class App < React::Component::Base
       url: '',
       price: "12.23" }
     App.app_state[:possible_products] = []
-    @code_fetcher = every(2) do
-      HTTP.get('/code.rb') do |response|
-        if response.ok?
-          @old_code ||= " "
-          new_code = response.body
-          if new_code != @old_code
-            puts "Updating code..."
-            eval(response.body)
-            @old_code = new_code
-            # App.app_state! App.app_state.clone
-            force_update_all!
-            puts "App state: #{App.app_state}"
-            # App.children
-          end
-        else
-          puts "failed with status #{response.status_code}"
-        end
-      end
-    end
   end
 
   def render
@@ -83,7 +48,13 @@ class App < React::Component::Base
       when "Intro"
         IntroPage {}
       when "Triage"
-        Triage app_state: App.app_state
+        puts "Sending product #{App.app_state[:product]} to Product"
+        Triage(
+          current_product: App.app_state[:product],
+          possible_products: App.app_state[:possible_products],
+          keep_product: lambda { |product|
+            App.app_state![:possible_products] << product
+          })
       when "Feedback"
         puts "Returning CommentBox"
         CommentBox app_state: App.app_state
@@ -140,7 +111,12 @@ class IntroPage < React::Component::Base
 end
 
 class Triage < React::Component::Base
-  param :app_state
+
+  param :current_product
+  param :possible_products
+
+  param :keep_product, type: Proc
+
   def render
     puts "Triage: render"
     div {
@@ -165,28 +141,44 @@ class Triage < React::Component::Base
 
       div.current {
         h3 { "Worth Adding To Your List?" }
-        Product(product: params.app_state[:product])
+        Product(product: params.current_product)
         a.another { "Not For Me" }.on(:click) { next_product }
-        a.thisone { "Keep it!" }.on(:click) { save_product }
+        br
+        a.thisone { "Keep it!" }.on(:click) { keep_product }
       }
 
       div.contenders {
-        params.app_state[:possible_products].each do |product|
+        params.possible_products.each do |product|
+          puts "Rendering contender"
           Product(product: product)
+          puts "Done Rendering contender"
         end
       }
     }
   end
+  def keep_product
+    params.keep_product(params.current_product)
+  end
+# (defn save-product []
+#   (if (@app-state :product)
+#     (if (not (seq-contains? (map :title (@app-state :possible-products)) (get-in @app-state [:product :title])))
+#       (do (
+#         (swap! app-state update-in [:possible-products] conj (@app-state :product))
+#         (swap! app-state assoc :product {})
+#         ; (swap! app-state update-in [:possible-products] shuffle))
+#           ))))
+#     (next-product))
 end
 
 class Product < React::Component::Base
   param :product
   def render
+    puts "Product: render [#{params.product}]"
     div.product {
       img.photo(src: params.product[:img])
       div.desc {
         h3.title { params.product[:title] }
-        div.price { "Price " + params.product[:price] }
+        div.price { "Price: $" + params.product[:price] }
         a.buy_link(href: params.product[:url], target: '_blank') { "Buy it on BLINQ" }
       }
     }
@@ -257,10 +249,10 @@ class CommentBox < React::Component::Base
       h2 { "Feedback is really awesome!" }
 
       puts "Re-rendering CommentBox"
-      CommentList comments: [*state.comments]
       CommentForm submit_comment: lambda { |comment|
         state.comments! << send_comment_to_server(comment)
       }
+      CommentList comments: [*state.comments]
 
     end
   end
