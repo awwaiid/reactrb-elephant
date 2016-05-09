@@ -19,14 +19,16 @@ end
 class App < React::Component::Base
   define_state :app_state
   before_mount do
-    state.app_state! Hash.new
-    state.app_state[:page] = 'Intro'
-    state.app_state[:product] = {
-      title: "hmm",
-      img: '',
-      url: '',
-      price: "12.23" }
-    state.app_state[:possible_products] = []
+    state.app_state!({
+      page: 'Intro',
+      possible_products: [],
+      product: {
+        title: "Not Really A Product",
+        img: '',
+        url: '',
+        price: "12.23"
+      }
+    })
   end
 
   def render
