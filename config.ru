@@ -21,7 +21,7 @@ end
 
 get '/random_product.json' do
   JSON.generate({
-    title: "Other thing",
+    title: "Many Other things, #" + rand(1000).to_s,
     img: '',
     url: '',
     price: rand(20).to_s

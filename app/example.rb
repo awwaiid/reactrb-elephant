@@ -79,11 +79,14 @@ class App < React::Component::Base
   end
 
   def next_product
-    state.app_state![:product] = {
-      title: "Other thing",
-      img: '',
-      url: '',
-      price: rand(20).to_s }
+    HTTP.get('/random_product.json') do |response|
+      if response.ok?
+        product = JSON.parse(response.body)
+        state.app_state![:product] = product
+      else
+        puts "failed with status #{response.status_code}"
+      end
+    end
   end
 end
 
