@@ -7,6 +7,12 @@ require "json"
 require 'reactive-ruby'
 require 'opal-parser' # gives me 'eval', for hot-loading code
 
+# You need something like this server-side:
+#
+#     get '/code.rb' do
+#       open("app/example.rb").read
+#     end
+
 # This will only load one time!
 if !$loader_loaded
   # Fix re-defining callbacks
