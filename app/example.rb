@@ -6,9 +6,9 @@ require "json"
 require 'reactive-ruby'
 require 'liveloader'
 
-Document.ready? do
-  if ! $loaded
-    $loaded = true
+if ! $loaded # Only set this up once
+  $loaded = true
+  Document.ready? do
     React.render(
       React.create_element(App),
       Element['#content']
