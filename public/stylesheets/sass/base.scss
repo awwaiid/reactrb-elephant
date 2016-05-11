@@ -1,0 +1,98 @@
+
+#content {
+  // display: flex;
+  // flex-direction: row;
+  // border: 1px solid red;
+}
+
+
+.header {
+  justify-content: flex-start;
+
+
+  h1 {
+    background-color: black;
+    color: white;
+    margin: 0;
+    padding: 0.5em;
+  }
+}
+
+.nav {
+
+  display: flex;
+  justify-content: space-between;
+
+
+  .nav-item {
+    // border: 1px solid black;
+    width: 100%;
+    a {
+      display: block;
+      // border: 1px solid green;
+    padding: 0.5em;
+    padding-left: 3em;
+      text-decoration: none;
+      background-color: darkgreen;
+      color: white;
+      &:hover {
+        background-color: green;
+      }
+    }
+  }
+}
+
+.page {
+  margin: 1em 4em;
+}
+
+
+.product {
+  border: 1px solid black;
+  width: 200px;
+  padding: 20px;
+  background-color: #ccc;
+  display: flex;
+  flex-direction: column;
+
+
+  img {
+    border: 1px solid black;
+    width: 200px;
+  }
+}
+
+.triage {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+  .current {
+  }
+  .contenders {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    .product {
+      padding: 5px;
+      width: 300px;
+      flex-direction: row;
+      * { font-size: 10px }
+      .comma, .buy-link { display: none }
+      // .title { font-size: 10px };
+      // .price { 
+      //   span.price { params.product[:price] }
+      //   ", ".span
+      //   a.buy_link(href: params.product[:url], target: '_blank') { "Buy it on BLINQ" }
+    }
+    img {
+      height: 40px;
+      width: 40px;
+      margin: 5px;
+    }
+    a {
+      position: relative;
+      left: -15px;
+    }
+  }
+}
+
