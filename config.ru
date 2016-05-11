@@ -2,6 +2,8 @@
 require 'bundler'
 Bundler.require
 
+require 'sass/plugin/rack'
+
 # Opal::Processor.source_map_enabled = true
 
 opal = Opal::Server.new {|s|
@@ -19,51 +21,33 @@ map '/assets' do
   run opal.sprockets
 end
 
+# Sass::Plugin.options[:style] = :compressed
+use Sass::Plugin::Rack
+
 get '/random_product.json' do
+  offset = rand(3000)
+  low_price = 0
+  high_price = 20_00
+  random_product_url = "https://www.blinq.com/search/go?p=Q&lbc=blinq&w=*&" +
+    "af=price%3a%5b#{low_price}%2c#{high_price}%5d" +
+    "&isort=price&method=and&view=grid&ts=infinitescroll&" +
+    "srt=#{offset}"
+
+  require 'open-uri'
+  page = Nokogiri::HTML(open(random_product_url))
+
+  title = page.css('li h3.tile-desc').first.text
+  img = page.css('li div.tile-img img').first['src']
+  url = page.css('li a.tile-link').first['href']
+  price = page.css('li span.live_saleprice').first.text
+
   JSON.generate({
-    title: "Many Other things, #" + rand(1000).to_s,
-    img: '',
-    url: '',
-    price: rand(20).to_s
+    title: title,
+    img: img,
+    url: url,
+    price: price
   })
 end
-
-# (defn fetch-url [url]
-#   (enlive/html-resource (java.net.URL. url)))
-
-# (defn random-product-url []
-#   (let [offset (rand-int 9000)
-#         low-price 0
-#         high-price 2000]
-#     (printf "Offset: %d\n" offset)
-#     (str "https://www.blinq.com/search/go?p=Q&lbc=blinq&w=*&"
-#          "af=price%3a%5b" low-price "%2c" high-price "%5d"
-#          "&isort=price&method=and&view=grid&ts=infinitescroll&"
-#          "srt=" offset)))
-
-# (defn random-product
-#   "Grab a random product, extracting out the essentials"
-#   []
-#   (let [page (fetch-url (random-product-url))
-#         title (enlive/text (first
-#                              (enlive/select
-#                                page
-#                                [[:li (enlive/nth-of-type 1)] :h3.tile-desc])))
-#         img (get-in (first (enlive/select
-#                              page
-#                              [[:li (enlive/nth-of-type 1)] :div.tile-img :img])) [:attrs :src])
-#         url (get-in (first (enlive/select
-#                              page
-#                              [[:li (enlive/nth-of-type 1)] :a.tile-link])) [:attrs :href])
-#         price (enlive/text (first
-#                              (enlive/select
-#                                page
-#                                [[:li (enlive/nth-of-type 1)] :span.live_saleprice])))]
-#     (response {:img img
-#                :title title
-#                :brock 5
-#                :price price
-#                :url url})))
 
 get '/comments.json' do
   comments = JSON.parse(open("./_comments.json").read)
@@ -87,13 +71,18 @@ get '/code.rb' do
   open("app/example.rb").read
 end
 
+get '/liveload-css' do
+  File.mtime('public/stylesheets/base.css').to_s
+end
+
 get '/' do
   <<-HTML
     <!doctype html>
     <html>
       <head>
         <title>Hello React</title>
-        <link rel="stylesheet" href="base.css" />
+        <link rel="stylesheet" href="stylesheets/normalize.css" />
+        <link id="base-css" rel="stylesheet" href="stylesheets/base.css" />
         <script src="http://cdnjs.cloudflare.com/ajax/libs/showdown/0.3.1/showdown.min.js"></script>
         <script src="/assets/example.js"></script>
         <script src="/comments.js"></script>
@@ -109,3 +98,4 @@ get '/' do
 end
 
 run Sinatra::Application
+

@@ -33,34 +33,38 @@ class App < React::Component::Base
 
   def render
     div do
-      span { "White Elephant Gift Selector" }
-      pages = ['Intro', 'Triage', 'Feedback', 'About']
-      ul {
-        pages.each do |pagename|
-          li {
-            a(href: "#") { pagename }.on(:click) {
-              state.app_state![:page] = pagename
+      div.header do
+        h1 { "White Elephant Gift Selector" }
+        pages = ['Intro', 'Triage', 'Feedback', 'About']
+        div.nav {
+          pages.each do |pagename|
+            div.nav_item {
+              a(href: "#") { pagename }.on(:click) {
+                state.app_state![:page] = pagename
+              }
             }
-          }
+          end
+        }
+      end
+      div.page do
+        current_page = state.app_state[:page]
+        case current_page
+        when "Intro"
+          IntroPage goto_page: method(:goto_page) # to_proc stops warning
+        when "Triage"
+          Triage(
+            current_product:   state.app_state[:product],
+            possible_products: state.app_state[:possible_products],
+            keep_product:      method(:keep_product),
+            remove_product:    method(:remove_product),
+            next_product:      method(:next_product))
+        when "Feedback"
+          CommentBox app_state: state.app_state
+        when "About"
+          AboutPage {}
+        else
+          h2 { "ERROR" }
         end
-      }
-      current_page = state.app_state[:page]
-      case current_page
-      when "Intro"
-        IntroPage goto_page: method(:goto_page) # to_proc stops warning
-      when "Triage"
-        Triage(
-          current_product:   state.app_state[:product],
-          possible_products: state.app_state[:possible_products],
-          keep_product:      method(:keep_product),
-          remove_product:    method(:remove_product),
-          next_product:      method(:next_product))
-      when "Feedback"
-        CommentBox app_state: state.app_state
-      when "About"
-        AboutPage {}
-      else
-        h2 { "ERROR" }
       end
     end
   end
@@ -79,10 +83,12 @@ class App < React::Component::Base
   end
 
   def next_product
+    puts "app: next_product"
     HTTP.get('/random_product.json') do |response|
       if response.ok?
         product = JSON.parse(response.body)
         state.app_state![:product] = product
+        state.app_state! # Why do I need this?
       else
         puts "failed with status #{response.status_code}"
       end
@@ -145,6 +151,7 @@ class Triage < React::Component::Base
 #   [:div
 
       h2 { "Triage: Build Your Product List" }
+      h3 { "Is this a white-elephant-gift worth considering?" }
 
 #    [possible-products-count]
 #    (if (>= (count (@app-state :possible-products)) 16)
@@ -158,19 +165,20 @@ class Triage < React::Component::Base
 #                         } (str (count (@app-state :possible-products)) " is enough... Tournament time!")]
 #    [:br]])
 
-      div.current {
-        h3 { "Is this a white-elephant-gift worth considering?" }
-        Product(product: params.current_product)
-        a.another(href:'#') { "Not For Me" }.on(:click) { next_product }
-        br
-        a.thisone(href:'#') { "Keep it!" }.on(:click) { keep_product }
-      }
+      div.triage {
+        div.current {
+          Product(product: params.current_product)
+          a.another(href:'#') { "Not For Me" }.on(:click) { next_product }
+          br
+          a.thisone(href:'#') { "Keep it!" }.on(:click) { keep_product }
+        }
 
-      div.contenders {
-        params.possible_products.each do |product|
-          Product(product: product)
-          a(href:'#') { "remove" }.on(:click) { remove_product(product) }
-        end
+        div.contenders {
+          params.possible_products.each do |product|
+            Product(product: product)
+            a(href:'#') { "X" }.on(:click) { remove_product(product) }
+          end
+        }
       }
     }
   end
@@ -180,6 +188,7 @@ class Triage < React::Component::Base
   end
 
   def next_product
+    puts "triage: next_product"
     params.next_product
   end
 end
@@ -194,7 +203,8 @@ class Product < React::Component::Base
       img.photo(src: params.product[:img])
       div.desc {
         h3.title { params.product[:title] }
-        div.price { "Price: $" + params.product[:price] }
+        span.price { params.product[:price] }
+        ", ".span.comma
         a.buy_link(href: params.product[:url], target: '_blank') { "Buy it on BLINQ" }
       }
     }
