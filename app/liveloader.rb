@@ -15,6 +15,7 @@ require 'opal-parser' # gives me 'eval', for hot-loading code
 
 # This will only load one time!
 if !$loader_loaded
+
   # Fix re-defining callbacks
   module React
     module Callbacks
