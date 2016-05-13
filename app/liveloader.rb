@@ -92,12 +92,10 @@ if !$loader_loaded
         if new_timestamp != @old_timestamp
           puts "LIVE LOADER: Updating css..."
           existing_style = Element.find('#base-css')
-          puts existing_style
           new_style = Element.new(:link)
           new_style.id = "base-css"
           new_style[:rel] = "stylesheet"
           new_style[:href] = "stylesheets/base.css"
-          puts new_style
           existing_style.after(new_style)
           existing_style.remove
           @old_timestamp = new_timestamp

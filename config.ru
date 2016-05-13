@@ -80,7 +80,7 @@ get '/' do
     <!doctype html>
     <html>
       <head>
-        <title>Hello React</title>
+        <title>White Elephant Gift Selector</title>
         <link rel="stylesheet" href="stylesheets/normalize.css" />
         <link id="base-css" rel="stylesheet" href="stylesheets/base.css" />
         <script src="http://cdnjs.cloudflare.com/ajax/libs/showdown/0.3.1/showdown.min.js"></script>

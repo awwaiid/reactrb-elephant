@@ -29,10 +29,11 @@ class App < React::Component::Base
         price: "12.23"
       }
     })
+    next_product
   end
 
   def render
-    div do
+    div.app do
       div.header do
         h1 { "White Elephant Gift Selector" }
         pages = ['Intro', 'Triage', 'Feedback', 'About']
@@ -98,7 +99,7 @@ end
 
 class AboutPage < React::Component::Base
   def render
-    div {
+    div.about_page {
       Showdown markup: <<-END.gsub(/^\ {8}/, "")
         ## About: What is this thing?!
 
@@ -115,7 +116,7 @@ end
 class IntroPage < React::Component::Base
   param :goto_page, type: Proc
   def render
-    div {
+    div.intro_page {
       Showdown markup: <<-END.gsub(/^\ {8}/, "")
         You're going to a **White Elephant Gift Exchange Party!** It is VITAL
         that you show up with a great gift. But there are so many choices!
@@ -145,27 +146,11 @@ class Triage < React::Component::Base
   param :remove_product, type: Proc
 
   def render
-    div {
-#   ; (if (< (count (@app-state :possible-products)) 1)
-#   ;   (secretary/dispatch! "/"))
-#   [:div
-
+    div.triage {
       h2 { "Triage: Build Your Product List" }
       h3 { "Is this a white-elephant-gift worth considering?" }
 
-#    [possible-products-count]
-#    (if (>= (count (@app-state :possible-products)) 16)
-#       [:div [:a.onward {:href "/tournament"
-#                         :onClick #( do (
-#          (swap! app-state update-in [:possible-products] shuffle)
-
-#   (secretary/dispatch! "/tournament"))
-
-#                                    )
-#                         } (str (count (@app-state :possible-products)) " is enough... Tournament time!")]
-#    [:br]])
-
-      div.triage {
+      div.triage_products {
         div.current {
           Product(product: params.current_product)
           a.another(href:'#') { "Not For Me" }.on(:click) { next_product }
@@ -174,7 +159,7 @@ class Triage < React::Component::Base
         }
 
         div.contenders {
-          params.possible_products.each do |product|
+          params.possible_products.each_with_index do |product, i|
             Product(product: product)
             a(href:'#') { "X" }.on(:click) { remove_product(product) }
           end
@@ -196,20 +181,27 @@ end
 class Product < React::Component::Base
 
   param :product
+  param :action
 
   def render
-    puts "Product: render [#{params.product}]"
+    puts "Product: render [#{params.product[:title]}]"
     div.product {
       img.photo(src: params.product[:img])
       div.desc {
         h3.title { params.product[:title] }
         span.price { params.product[:price] }
-        ", ".span.comma
+        span.comma { " " }
         a.buy_link(href: params.product[:url], target: '_blank') { "Buy it on BLINQ" }
       }
     }
   end
 end
+
+
+
+# ---------------------------------------------------------------------------
+# CommentBox, copied from the example application
+# ---------------------------------------------------------------------------
 
 class CommentBox < React::Component::Base
   param :url
@@ -261,8 +253,6 @@ class CommentBox < React::Component::Base
     end
   end
 end
-
-# Our second component!
 
 class CommentList < React::Component::Base
 
