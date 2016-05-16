@@ -1,9 +1,6 @@
 
-#content {
-  // display: flex;
-  // flex-direction: row;
-  // border: 1px solid red;
-}
+
+$product_color: #cdd;
 
 .header {
   justify-content: flex-start;
@@ -23,18 +20,19 @@
   justify-content: space-between;
 
   .nav-item {
+
     // border: 1px solid black;
     width: 100%;
     a {
       display: block;
       // border: 1px solid green;
     padding: 0.5em;
-    padding-left: 3em;
+    text-align: center;
       text-decoration: none;
-      background-color: darkgreen;
+      background-color: darkred;
       color: white;
       &:hover {
-        background-color: green;
+        background-color: lighten(darkred, 5%);
       }
     }
   }
@@ -49,7 +47,7 @@
   border: 1px solid black;
   width: 200px;
   padding: 20px;
-  background-color: #ccc;
+  background-color: $product_color;
   display: flex;
   flex-direction: column;
 
@@ -57,47 +55,69 @@
     border: 1px solid black;
     width: 200px;
   }
+
+  .buy-link {
+    text-decoration: none;
+    color: black;
+  }
 }
+
 
 .triage {
 
-    display: flex;
+  // border: 1px solid red;
+
+  display: flex;
   flex-direction: column;
 
   .triage-products {
     display: flex;
     flex-direction: row;
-    flex-wrap: wrap;
+    // flex-wrap: wrap;
     justify-content: flex-start
   }
 
-  .contenders {
-    flex-wrap: wrap;
-    flex-direction: row;
-
-    .product {
-      margin: 0 0 5px 5px;
-      padding: 5px;
-      width: 300px;
-      height: 80px;
-      display: flex;
-      flex-direction: row;
-      * { font-size: 10px }
-      .comma, .buy-link { display: none }
-    }
-
-    img {
-      height: 40px;
-      width: 40px;
-      margin: 5px;
-    }
-
-    a {
-      position: relative;
-      top: -35px;
-      left: 15px;
-      text-decoration: none;
-    }
-  }
 }
 
+.contenders {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+  align-content: flex-start;
+  justify-content: flex-start;
+  // border: 1px solid blue;
+  // justify-content: flex-start;
+  // align-items: center;
+
+  .product {
+    // border: 4px solid green;
+    margin: 0 0 5px 5px;
+    padding: 5px;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    flex-direction: row;
+    * { font-size: 10px }
+    .desc { display: none }
+    button {
+      height: 3em;
+      width: 4em;
+      z-index: 2;
+    }
+  }
+
+  img {
+    height: 40px;
+    width: 40px;
+    margin: 5px;
+  }
+
+}
+
+
+.bracket {
+  .comparison {
+    display: flex;
+    flex-direction: row;
+  }
+}

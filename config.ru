@@ -24,6 +24,7 @@ end
 # Sass::Plugin.options[:style] = :compressed
 use Sass::Plugin::Rack
 
+
 get '/random_product.json' do
   offset = rand(3000)
   low_price = 0
@@ -82,7 +83,7 @@ get '/' do
       <head>
         <title>White Elephant Gift Selector</title>
         <link rel="stylesheet" href="stylesheets/normalize.css" />
-        <link id="base-css" rel="stylesheet" href="stylesheets/base.css" />
+        <link rel="stylesheet" href="stylesheets/base.css" />
         <script src="http://cdnjs.cloudflare.com/ajax/libs/showdown/0.3.1/showdown.min.js"></script>
         <script src="/assets/example.js"></script>
         <script src="/comments.js"></script>

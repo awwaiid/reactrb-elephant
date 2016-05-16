@@ -71,7 +71,7 @@ if !$loader_loaded
     end
   end
 
-  @code_fetcher = every(0.5) do
+  @code_fetcher = every(0.1) do
     HTTP.get('/code.rb') do |response|
       if response.ok?
         @old_code ||= " "
