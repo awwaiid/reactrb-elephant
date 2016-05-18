@@ -46,10 +46,12 @@ $product_color: #cdd;
 .product {
   border: 1px solid black;
   width: 200px;
+  height: 500px;
   padding: 20px;
   background-color: $product_color;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
 
   img {
     border: 1px solid black;
@@ -114,6 +116,7 @@ $product_color: #cdd;
 
 }
 
+// * { border: 1px solid red; }
 
 .bracket {
   .comparison {

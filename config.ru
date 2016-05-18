@@ -24,7 +24,6 @@ end
 # Sass::Plugin.options[:style] = :compressed
 use Sass::Plugin::Rack
 
-
 get '/random_product.json' do
   offset = rand(3000)
   low_price = 0

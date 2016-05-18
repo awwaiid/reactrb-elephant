@@ -33,7 +33,8 @@ class App < React::Component::Base
         price: "12.23"
       }
     })
-    next_product
+    @product_queue = []
+    fill_product_queue
   end
 
   def render
@@ -67,7 +68,7 @@ class App < React::Component::Base
         when "Bracket"
           Bracket(
             possible_products: state.app_state[:possible_products],
-            keep_product:      method(:keep_product),
+            keep_product:      lambda { |product| keep_product(product, false) },
             remove_product:    method(:remove_product)
           )
         when "Feedback"
@@ -85,26 +86,41 @@ class App < React::Component::Base
     state.app_state![:page] = pagename
   end
 
-  def keep_product(product)
+  def keep_product(product, get_next = true)
     state.app_state![:possible_products] << product
-    next_product
+    next_product if get_next
   end
 
   def remove_product(product)
     state.app_state![:possible_products].delete(product)
   end
 
-  def next_product
-    puts "app: next_product"
+  def get_random_product
     HTTP.get('/random_product.json') do |response|
       if response.ok?
         product = JSON.parse(response.body)
-        state.app_state![:product] = product
-        state.app_state! # Why do I need this?
+        yield product
       else
         puts "failed with status #{response.status_code}"
       end
     end
+  end
+
+  # The API is pretty slow, so we'll pre-fetch a bunch of products
+  def fill_product_queue
+    if @product_queue.count < 20
+      get_random_product do |product|
+        @product_queue << product
+        fill_product_queue
+      end
+    end
+  end
+
+  def next_product
+    product = @product_queue.shift
+    state.app_state![:product] = product
+    state.app_state! # Why do I need this?
+    fill_product_queue
   end
 end
 
@@ -178,7 +194,7 @@ class Triage < React::Component::Base
             Product(
               product: product,
               actions: [
-                { text: "X", action: -> { remove_product(product) } }
+                # { text: "X", action: -> { remove_product(product) } }
               ]
             )
           end
@@ -203,7 +219,7 @@ class Product < React::Component::Base
   param :actions
 
   def render
-    puts "Product: render [#{params.product[:title]}]"
+    # puts "Product: render [#{params.product[:title]}]"
     div.product {
       a.buy_link(href: params.product[:url], target: '_blank') {
         img.photo(src: params.product[:img])
@@ -213,9 +229,11 @@ class Product < React::Component::Base
             span.comma { " " }
           }
       }
-      params.actions.each do |action|
-        button.action { action[:text] }.on(:click) { action[:action].() }
-      end
+      div {
+        params.actions.each do |action|
+          button.action { action[:text] }.on(:click) { action[:action].() }
+        end
+      }
     }
 
   end
