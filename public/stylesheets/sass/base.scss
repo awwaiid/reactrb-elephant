@@ -2,15 +2,33 @@
 
 $product_color: #cdd;
 
+@import url(https://fonts.googleapis.com/css?family=Playball);
+
 .header {
+  display: flex;
+  flex-direction: column;
   justify-content: flex-start;
+  flex-wrap: none;
 
+  .heading {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
 
-  h1 {
-    background-color: black;
-    color: white;
-    margin: 0;
-    padding: 0.5em;
+    .title-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-family: 'Playball', cursive;
+      margin-left: 40px;
+      .title { font-size: 40px; }
+      .subtitle { font-size: 20px; }
+    }
+
+    .logo {
+      height: 100px;
+      margin: 10px;
+    }
   }
 }
 
@@ -67,7 +85,6 @@ $product_color: #cdd;
 
 .triage {
 
-  // border: 1px solid red;
 
   display: flex;
   flex-direction: column;
@@ -116,7 +133,6 @@ $product_color: #cdd;
 
 }
 
-// * { border: 1px solid red; }
 
 .bracket {
   .comparison {
@@ -124,3 +140,11 @@ $product_color: #cdd;
     flex-direction: row;
   }
 }
+
+.comment-box {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+

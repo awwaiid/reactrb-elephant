@@ -62,18 +62,11 @@ end
 
 post "/comments.json" do
   comments = JSON.parse(open("./_comments.json").read)
-  comments.unshift(JSON.parse(request.body.read))
+  comments.push(JSON.parse(request.body.read))
   File.write('./_comments.json', JSON.pretty_generate(comments, :indent => '    '))
-  JSON.generate(comments)
+  JSON.generate(comments.last(10))
 end
 
-get '/code.rb' do
-  open("app/example.rb").read
-end
-
-get '/liveload-css' do
-  File.mtime('public/stylesheets/base.css').to_s
-end
 
 get '/' do
   <<-HTML

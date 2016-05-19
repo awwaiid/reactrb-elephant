@@ -35,12 +35,19 @@ class App < React::Component::Base
     })
     @product_queue = []
     fill_product_queue
+    # next_product
   end
 
   def render
     div.app do
       div.header do
-        h1 { "White Elephant Gift Selector" }
+        div.heading {
+          img.logo(src: 'white_elephant.png')
+          div.title_box {
+            span.title { "White Elephant Gift Selector" }
+            span.subtitle { "The Interactive Guide to the Perfect Gift" }
+          }
+        }
         pages = ['Intro', 'Triage', 'Bracket', 'Feedback', 'About']
         div.nav {
           pages.each do |pagename|
@@ -145,9 +152,16 @@ class IntroPage < React::Component::Base
   def render
     div.intro_page {
       Showdown markup: <<-END.gsub(/^\ {8}/, "")
-        You're going to a **White Elephant Gift Exchange Party!** It is VITAL
-        that you show up with a great gift. But there are so many choices!
-        What to do?
+        ## Salutations, seeker of gifts!
+
+        You have the distinct honor of attending a **White Elephant Gift
+        Exchange Party!** A party in which each participant brings with them a
+        delicious bit of wonder so enticing that others will snatch it up,
+        returning to their castle to discover all too late how much care and
+        feeding a White Elephant actually requires.
+
+        It is **VITAL** that you show up with a great gift. But there are so
+        many choices!  What to do? What makes the perfect White Elephant Gift?!
 
         **Triage Phase:** We'll look through a bunch of random products,
         keeping the potential gifts. Pick out at least 16. You decide what is
