@@ -7,8 +7,8 @@ require 'reactive-ruby'
 require 'commentbox'
 
 # Dev-mode hot reloader!
-# require 'opal_hot_reloader'
-# OpalHotReloader.listen(25222, true)
+require 'opal_hot_reloader'
+OpalHotReloader.listen(25222, true)
 
 if ! $loaded # Only set this up once
   $loaded = true
@@ -17,6 +17,41 @@ if ! $loaded # Only set this up once
       React.create_element(App),
       Element['#content']
     )
+  end
+end
+
+class Navigation < React::Component::Base
+
+  param :current_page
+  param :goto_page, type: Proc
+
+  def render
+    pages = ['Intro', 'Triage', 'Bracket', 'Chat', 'About']
+    div.nav {
+      pages.each do |pagename|
+        div.nav_item {
+          if params.current_page == pagename
+            a.current(href: "#") { "#{pagename}" }
+          else
+            a(href: '#') { pagename }
+              .on(:click) { params.goto_page(pagename) }
+          end
+        }
+      end
+    }
+  end
+
+end
+
+class Heading < React::Component::Base
+  def render
+    div.heading {
+      img.logo(src: 'white_elephant.png')
+      div.title_box {
+        span.title { "White Elephant Gift Selector" }
+        span.subtitle { "The Interactive Guide to the Perfect Gift" }
+      }
+    }
   end
 end
 
@@ -34,8 +69,10 @@ class App < React::Component::Base
       }
     })
     @product_queue = []
-    fill_product_queue
-    # next_product
+    get_random_product do |product|
+      @product_queue << product
+      next_product
+    end
   end
 
   def render
@@ -43,29 +80,12 @@ class App < React::Component::Base
 
     div.app do
       div.header do
-        div.heading {
-          img.logo(src: 'white_elephant.png')
-          div.title_box {
-            span.title { "White Elephant Gift Selector" }
-            span.subtitle { "The Interactive Guide to the Perfect Gift" }
-          }
-        }
-        pages = ['Intro', 'Triage', 'Bracket', 'Chat', 'About']
-        div.nav {
-          pages.each do |pagename|
-            div.nav_item {
-              if current_page == pagename
-                a.current(href: "#") { "#{pagename}" }
-              else
-                a(href: "#") { "#{pagename}" }.on(:click) {
-                  state.app_state![:page] = pagename
-                }
-              end
-            }
-          end
-        }
+        Heading {}
+        Navigation current_page: current_page, goto_page: method(:goto_page)
       end
       div.page do
+
+        # Dispatch to a component based on the current page
         case current_page
         when "Intro"
           IntroPage goto_page: method(:goto_page)
@@ -108,10 +128,16 @@ class App < React::Component::Base
   end
 
   def get_random_product
+    puts "Getting random product..."
     HTTP.get('/random_product.json') do |response|
+      puts "Got response"
       if response.ok?
         product = JSON.parse(response.body)
+        # Create an Image to pre-fetch it :)
         yield product
+        puts "Pre-fetching image #{product[:img]}"
+        image = Element.new(:img)
+        image[:src] = product[:img]
       else
         puts "failed with status #{response.status_code}"
       end
@@ -142,17 +168,26 @@ class AboutPage < React::Component::Base
       Showdown markup: <<-END.gsub(/^\ {8}/, "")
         ## About: What is this thing?!
 
-        This gift selector is two things. First, a fun way to pick out some fabulous gifts. Obviously? :)
+        This gift selector is two things. First, a fun way to pick out some
+        fabulous gifts. Obviously? :)
 
-        Second it is a learning environment for experimenting in some random web technology. The original version was implemented in [ClojureScript](https://github.com/clojure/clojurescript).
+        Second it is a learning environment for experimenting in some random
+        web technology. The original version was implemented in
+        [ClojureScript](https://github.com/clojure/clojurescript).
 
-        For this incarnation we are using [Opal](http://opalrb.org) and [React.rb](http://reactrb.org), along with some cool dev-mode tools such as [opal-hot-reloader](https://github.com/fkchang/opal-hot-reloader).
+        For this incarnation we are using [Opal](http://opalrb.org) and
+        [React.rb](http://reactrb.org), along with some cool dev-mode tools
+        such as
+        [opal-hot-reloader](https://github.com/fkchang/opal-hot-reloader).
 
-        Check out and mess with the source code on [Github](https://github.com/awwaiid/reactrb-elephant)
+        Check out and mess with the source code on
+        [Github](https://github.com/awwaiid/reactrb-elephant)
 
-        Follow me on twitter, [@awwaiid](https://twitter.com/awwaiid), if you like nonsense and occasional photos of pugs.
+        Follow me on twitter, [@awwaiid](https://twitter.com/awwaiid), if you
+        like nonsense and occasional photos of pugs.
 
-        Contributors include, and many thanks to, Elizabeth McCollum and Danny Cohen.
+        Contributors include, and many thanks to, Elizabeth McCollum and Danny
+        Cohen.
       END
     }
   end

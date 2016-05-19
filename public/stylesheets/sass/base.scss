@@ -4,15 +4,23 @@ $product_color: #cdd;
 
 @import url(https://fonts.googleapis.com/css?family=Playball);
 
+.app {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  // border: 1px solid red;
+}
+
 .header {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   flex-wrap: none;
+  width: 100%;
 
   .heading {
     display: flex;
-    justify-content: flex-start;
+    justify-content: center;
     align-items: center;
 
     .title-box {
@@ -20,7 +28,7 @@ $product_color: #cdd;
       flex-direction: column;
       align-items: center;
       font-family: 'Playball', cursive;
-      margin-left: 40px;
+      margin: 0 40px;
       .title { font-size: 40px; }
       .subtitle { font-size: 20px; }
     }
@@ -73,7 +81,7 @@ $product_color: #cdd;
 .product {
   border: 1px solid black;
   width: 200px;
-  height: 500px;
+  // height: 400px;
   padding: 20px;
   background-color: $product_color;
   display: flex;
@@ -88,6 +96,13 @@ $product_color: #cdd;
   .buy-link {
     text-decoration: none;
     color: black;
+  }
+
+  .title {
+    font-size: 15px;
+    line-height: 25px;
+    height: 75px;
+    overflow: hidden;
   }
 }
 
