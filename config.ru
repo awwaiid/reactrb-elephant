@@ -83,7 +83,7 @@ get '/' do
         <title>White Elephant Gift Selector</title>
         <link rel="stylesheet" href="stylesheets/normalize.css" />
         <link rel="stylesheet" href="stylesheets/base.css" />
-        <script src="http://cdnjs.cloudflare.com/ajax/libs/showdown/0.3.1/showdown.min.js"></script>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/showdown/0.3.1/showdown.min.js"></script>
         <script src="/assets/example.js"></script>
         <script src="/comments.js"></script>
         <script>#{Opal::Processor.load_asset_code(opal.sprockets, "example.js")}</script>
