@@ -7,8 +7,9 @@ require 'reactive-ruby'
 require 'commentbox'
 
 # Dev-mode hot reloader!
-require 'opal_hot_reloader'
-OpalHotReloader.listen(25222, true)
+if require 'opal_hot_reloader'
+	OpalHotReloader.listen(25222, true)
+end
 
 if ! $loaded # Only set this up once
   $loaded = true
