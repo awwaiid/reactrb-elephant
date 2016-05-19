@@ -39,6 +39,8 @@ class App < React::Component::Base
   end
 
   def render
+    current_page = state.app_state[:page]
+
     div.app do
       div.header do
         div.heading {
@@ -48,19 +50,22 @@ class App < React::Component::Base
             span.subtitle { "The Interactive Guide to the Perfect Gift" }
           }
         }
-        pages = ['Intro', 'Triage', 'Bracket', 'Feedback', 'About']
+        pages = ['Intro', 'Triage', 'Bracket', 'Chat', 'About']
         div.nav {
           pages.each do |pagename|
             div.nav_item {
-              a(href: "#") { "#{pagename}" }.on(:click) {
-                state.app_state![:page] = pagename
-              }
+              if current_page == pagename
+                a.current(href: "#") { "#{pagename}" }
+              else
+                a(href: "#") { "#{pagename}" }.on(:click) {
+                  state.app_state![:page] = pagename
+                }
+              end
             }
           end
         }
       end
       div.page do
-        current_page = state.app_state[:page]
         case current_page
         when "Intro"
           IntroPage goto_page: method(:goto_page)
@@ -78,7 +83,7 @@ class App < React::Component::Base
             keep_product:      lambda { |product| keep_product(product, false) },
             remove_product:    method(:remove_product)
           )
-        when "Feedback"
+        when "Chat"
           CommentBox app_state: state.app_state
         when "About"
           AboutPage {}
@@ -137,11 +142,17 @@ class AboutPage < React::Component::Base
       Showdown markup: <<-END.gsub(/^\ {8}/, "")
         ## About: What is this thing?!
 
-        I previously built this in ClojureScript/React. This is a re-write
-        using Opal/ReactRB!
+        This gift selector is two things. First, a fun way to pick out some fabulous gifts. Obviously? :)
 
-        [Github](https://github.com/awwaiid/reactrb-elephant) -
-        [@awwaiid](https://twitter.com/awwaiid)
+        Second it is a learning environment for experimenting in some random web technology. The original version was implemented in [ClojureScript](https://github.com/clojure/clojurescript).
+
+        For this incarnation we are using [Opal](http://opalrb.org) and [React.rb](http://reactrb.org), along with some cool dev-mode tools such as [opal-hot-reloader](https://github.com/fkchang/opal-hot-reloader).
+
+        Check out and mess with the source code on [Github](https://github.com/awwaiid/reactrb-elephant)
+
+        Follow me on twitter, [@awwaiid](https://twitter.com/awwaiid), if you like nonsense and occasional photos of pugs.
+
+        Contributors include, and many thanks to, Elizabeth McCollum and Danny Cohen.
       END
     }
   end
@@ -164,7 +175,7 @@ class IntroPage < React::Component::Base
         many choices!  What to do? What makes the perfect White Elephant Gift?!
 
         **Triage Phase:** We'll look through a bunch of random products,
-        keeping the potential gifts. Pick out at least 16. You decide what is
+        keeping the potential gifts. Pick out 16 gifts. You decide what is
         worthy for consideration...  Funny? Work-appropriate? Kinda Awesome?
 
         **Tournament Phase:** Now that you have some potentials, it's time to

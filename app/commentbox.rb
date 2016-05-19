@@ -44,7 +44,7 @@ class CommentBox < React::Component::Base
 
   def render
     div.comment_box do          # just like <div class="commentBox">
-      h2 { "Feedback is really awesome!" }
+      h2 { "Discuss Your Strategy, Leave Some Feedback" }
 
       CommentList comments: [*state.comments]
       CommentForm submit_comment: lambda { |comment|

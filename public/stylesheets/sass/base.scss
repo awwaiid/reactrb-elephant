@@ -39,27 +39,36 @@ $product_color: #cdd;
 
   .nav-item {
 
-    // border: 1px solid black;
     width: 100%;
+
     a {
       display: block;
-      // border: 1px solid green;
-    padding: 0.5em;
-    text-align: center;
+      padding: 0.5em;
+      text-align: center;
       text-decoration: none;
       background-color: darkred;
       color: white;
       &:hover {
-        background-color: lighten(darkred, 5%);
+        background-color: lighten(darkred, 5);
       }
+    }
+
+    a.current {
+      background-color: lighten(darkred, 10);
     }
   }
 }
 
 .page {
   margin: 1em 4em;
+  max-width: 600px;
 }
 
+.about-page, .intro-page {
+  font-size: 1.25em;
+  line-height: 1.75em;
+  text-align: justify;
+}
 
 .product {
   border: 1px solid black;
