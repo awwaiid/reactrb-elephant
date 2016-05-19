@@ -2,6 +2,7 @@
 require 'bundler'
 Bundler.require
 
+require 'open-uri'
 require 'sass/plugin/rack'
 
 # Opal::Processor.source_map_enabled = true
@@ -25,7 +26,14 @@ end
 use Sass::Plugin::Rack
 
 get '/random_product.json' do
-  offset = rand(3000)
+  if !$results_count
+    user_agent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_0) AppleWebKit/535.2 (KHTML, like Gecko) Chrome/15.0.854.0 Safari/535.2"
+    page_url = 'https://www.blinq.com/search/go?p=Q&lbc=blinq&ts=custom&w=*&isort=newest&method=and&view=grid&af=price%3A%5B0%2C2000%5D%0A'
+    page = Nokogiri::HTML(open(page_url, 'User-Agent' => user_agent))
+    $results_count = page.css('.results-text').first.text.gsub(/\D/, '').to_i
+    puts "Result count: #{$results_count}"
+  end
+  offset = rand($results_count)
   low_price = 0
   high_price = 20_00
   random_product_url = "https://www.blinq.com/search/go?p=Q&lbc=blinq&w=*&" +
@@ -33,7 +41,6 @@ get '/random_product.json' do
     "&isort=price&method=and&view=grid&ts=infinitescroll&" +
     "srt=#{offset}"
 
-  require 'open-uri'
   page = Nokogiri::HTML(open(random_product_url))
 
   title = page.css('li h3.tile-desc').first.text
