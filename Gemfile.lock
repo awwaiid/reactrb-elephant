@@ -1,5 +1,5 @@
 GIT
-  remote: git@github.com:fkchang/opal-hot-reloader.git
+  remote: https://github.com/fkchang/opal-hot-reloader.git
   revision: 03af9ab0e1ea42085414a0f11ebd136e7361266d
   specs:
     opal_hot_reloader (0.1.0)
