@@ -1,6 +1,6 @@
 
 
 /.sass-cache
-/public/stylesheets/**/*.css
-/public/stylesheets/**/*.map
+/server/public/stylesheets/**/*.css
+/server/public/stylesheets/**/*.map
 
